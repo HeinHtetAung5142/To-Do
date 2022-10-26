@@ -1,48 +1,33 @@
 /* eslint-disable react/jsx-key */
+import { DateTime } from 'luxon';
 import Head from 'next/head'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabaseClient } from "../lib/client";
 import styles from '../styles/Home.module.css'
 
-// test
-const options = [
-  {
-    label: "Apple",
-    value: "apple",
-  },
-  {
-    label: "Mango",
-    value: "mango",
-  },
-  {
-    label: "Banana",
-    value: "banana",
-  },
-  {
-    label: "Pineapple",
-    value: "pineapple",
-  },
-];
-
 export default function Home() {
-  const [task, setTask] = useState('');
-  const [day, setDay] = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear] = useState('');
+  const [todo, setToDo] = useState('');
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    supabaseClient
+      .from("todos")
+      .select("*")
+      .order("id", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error) {
+          setTodos(data);
+        }
+      });
+  });
 
   const handleSubmit = async event => {
     event.preventDefault();
 
-    const data = {
-      task: task,
-      day: day,
-      month: month,
-      year: year
-    }
     const { error } = await supabaseClient
       .from("todos")
-      .insert([{ task, day, month, year }]);
+      .insert([{ name: todo, created_at: DateTime.now() }]);
 
     if (error) {
       console.log(error);
@@ -50,12 +35,22 @@ export default function Home() {
       closeHandler();
     }
   };
-  
+
+  const handleDelete = async (tid) => {
+    const { error } = await supabaseClient
+      .from("todos")
+      .delete()
+      .eq('id', tid);
+
+    if (error) {
+      console.log(error);
+    } else {
+      setTodos(todos.filter((todo) => todo.id !== tid));
+    }
+  }
+
   const closeHandler = () => {
-    setTask('');
-    setDay('');
-    setMonth('');
-    setYear('');
+    setToDo('');
   };
 
   return (
@@ -84,51 +79,10 @@ export default function Home() {
             className='input' 
             type="text" 
             placeholder="To-Do" 
-            value={task}
-            onChange={event => setTask(event.target.value)}
+            value={todo}
+            onChange={event => setToDo(event.target.value)}
           />
 
-          <label className="label">
-					<span className="label-text">Select Day</span>
-				  </label>
-          <select 
-            className="select select-bordered" 
-            defaultValue='Day'
-            onChange={event => setDay(event.target.value)}
-          > 
-            <option disabled>Day</option>
-            {options.map((option) => (
-              <option value={option.value}>{option.label}</option>
-            ))}
-          </select>
-
-          <label className="label">
-            <span className="label-text">Select Month</span>
-          </label>
-          <select 
-            className="select select-bordered" 
-            defaultValue='Month'
-            onChange={event => setMonth(event.target.value)}
-          > 
-            <option disabled>Month</option>
-            {options.map((option) => (
-              <option value={option.value}>{option.label}</option>
-            ))}
-          </select>
-
-          <label className="label">
-            <span className="label-text">Select Year</span>
-          </label>
-          <select 
-            className="select select-bordered" 
-            defaultValue='Year'
-            onChange={event => setYear(event.target.value)}
-          >
-            <option disabled>Year</option>
-            {options.map((option) => (
-              <option value={option.value}>{option.label}</option>
-            ))}
-          </select>
           <br/>
           <button className='btn btn-primary' type="submit">Add</button>
         </form>
@@ -138,10 +92,24 @@ export default function Home() {
           <thead>
             <tr>
               <th>Task</th>
-              <th>Finish by:</th>
-              <td>Created at:</td>
+              <th>Created at:</th>
+              <th>Option</th>
             </tr>
           </thead>
+          <tbody>
+            {todos.map(todo => (
+              <tr key={todo.id}>
+                <td>{todo.name}</td>
+                <td>{todo.created_at}</td>
+                <td>
+                  <button className='btn btn-error' onClick={(event) => {
+                    event.stopPropagation();
+                    handleDelete(todo.id);
+                  }}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
 
       </main>
