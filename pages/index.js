@@ -1,8 +1,63 @@
+/* eslint-disable react/jsx-key */
 import Head from 'next/head'
 import Image from 'next/image'
+import { useState } from 'react'
+import { supabaseClient } from "../lib/client";
 import styles from '../styles/Home.module.css'
 
+// test
+const options = [
+  {
+    label: "Apple",
+    value: "apple",
+  },
+  {
+    label: "Mango",
+    value: "mango",
+  },
+  {
+    label: "Banana",
+    value: "banana",
+  },
+  {
+    label: "Pineapple",
+    value: "pineapple",
+  },
+];
+
 export default function Home() {
+  const [task, setTask] = useState('');
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+
+  const handleSubmit = async event => {
+    event.preventDefault();
+
+    const data = {
+      task: task,
+      day: day,
+      month: month,
+      year: year
+    }
+    const { error } = await supabaseClient
+      .from("todos")
+      .insert([{ task, day, month, year }]);
+
+    if (error) {
+      console.log(error);
+    } else {
+      closeHandler();
+    }
+  };
+  
+  const closeHandler = () => {
+    setTask('');
+    setDay('');
+    setMonth('');
+    setYear('');
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -16,14 +71,79 @@ export default function Home() {
           <a>To-Do</a> App
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        {/* <p className={styles.description}>
+          Get started by adding{' '}
+          <code className={styles.code}>a new task</code>
+        </p> */}
 
-        <div className={styles.grid}>
-          
-        </div>
+        <form className='form-control' onSubmit={handleSubmit}>
+          <label className="label">
+            <span className="label-text">Add a new task</span>
+          </label>
+          <input 
+            className='input' 
+            type="text" 
+            placeholder="To-Do" 
+            value={task}
+            onChange={event => setTask(event.target.value)}
+          />
+
+          <label className="label">
+					<span className="label-text">Select Day</span>
+				  </label>
+          <select 
+            className="select select-bordered" 
+            defaultValue='Day'
+            onChange={event => setDay(event.target.value)}
+          > 
+            <option disabled>Day</option>
+            {options.map((option) => (
+              <option value={option.value}>{option.label}</option>
+            ))}
+          </select>
+
+          <label className="label">
+            <span className="label-text">Select Month</span>
+          </label>
+          <select 
+            className="select select-bordered" 
+            defaultValue='Month'
+            onChange={event => setMonth(event.target.value)}
+          > 
+            <option disabled>Month</option>
+            {options.map((option) => (
+              <option value={option.value}>{option.label}</option>
+            ))}
+          </select>
+
+          <label className="label">
+            <span className="label-text">Select Year</span>
+          </label>
+          <select 
+            className="select select-bordered" 
+            defaultValue='Year'
+            onChange={event => setYear(event.target.value)}
+          >
+            <option disabled>Year</option>
+            {options.map((option) => (
+              <option value={option.value}>{option.label}</option>
+            ))}
+          </select>
+          <br/>
+          <button className='btn btn-primary' type="submit">Add</button>
+        </form>
+
+        <br/>
+        <table className='table w-full'>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Finish by:</th>
+              <td>Created at:</td>
+            </tr>
+          </thead>
+        </table>
+
       </main>
 
       <footer className={styles.footer}>
