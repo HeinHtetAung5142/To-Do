@@ -66,10 +66,10 @@ export default function Home() {
           <a>To-Do</a> App
         </h1>
 
-        {/* <p className={styles.description}>
+        <p className={styles.description}>
           Get started by adding{' '}
           <code className={styles.code}>a new task</code>
-        </p> */}
+        </p>
 
         <form className='form-control' onSubmit={handleSubmit}>
           <label className="label">
@@ -88,11 +88,11 @@ export default function Home() {
         </form>
 
         <br/>
-        <table className='table w-full'>
+        <table className='table w-80'>
           <thead>
             <tr>
               <th>Task</th>
-              <th>Created at:</th>
+              <th>Created at</th>
               <th>Option</th>
             </tr>
           </thead>
