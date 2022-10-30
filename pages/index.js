@@ -11,6 +11,10 @@ export default function Home() {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
+    onRun();
+  }, []);
+
+  const onRun = async event => {
     supabaseClient
       .from("todos")
       .select("*")
@@ -20,7 +24,7 @@ export default function Home() {
           setTodos(data);
         }
       });
-  });
+  }
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -32,6 +36,7 @@ export default function Home() {
     if (error) {
       console.log(error);
     } else {
+      onRun();
       closeHandler();
     }
   };
