@@ -144,7 +144,7 @@ async function sendEmailNotification(todo) {
 // });
 // Testing
 // Schedule the checkTodoDates function to run every day at 8:00 AM
-const checkDatesTask = cron.schedule("* 8 * * *", () => {
+const checkDatesTask = cron.schedule("* * * * *", () => {
   checkDates();
 });
 
