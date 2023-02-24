@@ -1,12 +1,12 @@
-/* eslint-disable react/jsx-key */
-import { DateTime } from "luxon";
 import Head from "next/head";
-import Image from "next/image";
+import styles from "../styles/Home.module.css";
+import { DateTime } from "luxon";
 import { useEffect, useState, useRef } from "react";
 import { supabaseClient } from "../lib/client";
-import styles from "../styles/Home.module.css";
 
 export default function Home() {
+  const startDateTimeRef = useRef();
+  const endDateTimeRef = useRef();
   const [todo, setToDo] = useState("");
   const [todos, setTodos] = useState([]);
 
@@ -29,9 +29,13 @@ export default function Home() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const { error } = await supabaseClient
-      .from("todos")
-      .insert([{ name: todo, created_at: DateTime.now() }]);
+    const { error } = await supabaseClient.from("todos").insert([
+      {
+        name: todo,
+        starts_at: startDateTimeRef.current.value,
+        ends_at: endDateTimeRef.current.value,
+      },
+    ]);
 
     if (error) {
       console.log(error);
@@ -71,7 +75,6 @@ export default function Home() {
         <p className={styles.description}>
           Get started by adding <code className={styles.code}>a new task</code>
         </p>
-
         <form className="form-control" onSubmit={handleSubmit}>
           <label className="label">
             <span className="label-text">Add a new task</span>
@@ -83,11 +86,31 @@ export default function Home() {
             value={todo}
             onChange={(event) => setToDo(event.target.value)}
           />
-
+          <label className="label">
+            <span className="label-text">Start Date and Time</span>
+          </label>
+          <input
+            type="datetime-local"
+            id="start-date"
+            name="start-date"
+            className="input"
+            ref={startDateTimeRef}
+          />
+          <label className="label">
+            <span className="label-text">End Date and Time</span>
+          </label>
+          <input
+            type="datetime-local"
+            id="start-date"
+            name="end-date"
+            className="input"
+            ref={endDateTimeRef}
+          />
           <br />
           <button className="btn btn-primary" type="submit">
             Add
           </button>
+          <br />
         </form>
 
         <br />
@@ -95,9 +118,8 @@ export default function Home() {
           <thead>
             <tr>
               <th>Task</th>
-              <th>Created at</th>
-              <th>Starts at</th>
-              <th>Ends at</th>
+              <th>Starts</th>
+              <th>Ends</th>
               <th>Option</th>
             </tr>
           </thead>
@@ -105,9 +127,8 @@ export default function Home() {
             {todos.map((todo) => (
               <tr key={todo.id}>
                 <td>{todo.name}</td>
-                <td>{todo.starts_at}</td>
-                <td>{todo.ends_at}</td>
-                <td>{todo.created_at}</td>
+                <td>{DateTime.fromISO(todo.starts_at).toRelativeCalendar()}</td>
+                <td>{DateTime.fromISO(todo.ends_at).toRelativeCalendar()}</td>
                 <td>
                   <button
                     className="btn btn-error"
